@@ -71,17 +71,12 @@ public class PoemServiceImpl implements PoemService {
             if(!StringUtils.isEmpty( subType )&&!subType.equals( "所有" )){
                 boolQueryBuilder.filter( QueryBuilders.nestedQuery( "category",QueryBuilders.termQuery( "category.name",subType ), ScoreMode.None));
             }
-            if (StringUtils.isEmpty(content)) {
-               /* //设置为查询所有
-                boolQueryBuilder.should( QueryBuilders.matchAllQuery() )
-                sourceBuilder.query(QueryBuilders.matchAllQuery());*/
-            } else {
+            if (!StringUtils.isEmpty(content)) {
                 //设置为多字段检索
                 String[] fields = {"name", "content", "author"};
                 BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
                 for (String field : fields) {
                     MatchQueryBuilder queryBuilder = QueryBuilders.matchQuery( field, content );
-                    queryBuilder.analyzer( "ik_smart" );
                     if (field.equals( "content" )) {
                         queryBuilder.boost(2f);
                     }
@@ -90,6 +85,7 @@ public class PoemServiceImpl implements PoemService {
                     }
                     boolQuery.should( queryBuilder );
                 }
+                boolQuery.minimumShouldMatch( "50%" );
                 DisMaxQueryBuilder disMaxQueryBuilder = QueryBuilders.disMaxQuery();
                 disMaxQueryBuilder.add( boolQuery );
                 disMaxQueryBuilder.tieBreaker( 0.4f );
@@ -98,11 +94,11 @@ public class PoemServiceImpl implements PoemService {
             }
 
             //指定过滤
-            //sourceBuilder.postFilter(boolQueryBuilder);
             sourceBuilder.query( boolQueryBuilder );
             //指定高亮
             sourceBuilder.highlighter(new HighlightBuilder().
-                    field("name").field( "author" ).field( "content" ).requireFieldMatch(false).preTags("<span style='color:red;'>").postTags("</span>"));
+                    field("name").field( "author" ).field( "content" )
+                    .requireFieldMatch(false).preTags("<span style='color:red;'>").postTags("</span>"));
             //指定显示记录
             sourceBuilder.size(20);
 

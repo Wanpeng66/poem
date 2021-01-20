@@ -116,11 +116,11 @@ public class PoemController {
             List<String> segment = SegmentHelper.segment(content, SegmentResultHandlers.word());
 
             log.info("当前搜索分词结果为:[{}]",segment);
-            /*segment.forEach(word->{
+            segment.forEach(word->{
                 if(word.length()>1){
                     stringRedisTemplate.opsForZSet().incrementScore("keywords", word, 0.5);
                 }
-            });*/
+            });
         }
         if (StringUtils.equals("所有", type)) type = null;
         if (StringUtils.equals("所有", author)) author = null;
