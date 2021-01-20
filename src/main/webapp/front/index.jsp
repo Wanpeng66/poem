@@ -85,7 +85,7 @@
                     "border": "0px black solid",
                     "float": "left",
                     "width": "280",
-                    //"height": "70",
+                    "height": "700",
                     "margin": "10px 50px 15px 0px",
                     "border-radius": "10px",
                     "position":"relative"
@@ -94,7 +94,7 @@
                 let name = $("<li/>").html("<h4><a href='javascript:;' poemid=" + poem.id + ">" + poem.name + "</h4>");
                 let author = $("<li/>").html("<h4>" + poem.author + "·" + poem.type + "</h4>");
                 let content = $("<li/>").html(poem.content)/*.css("display", "none")*/.attr("id", "content" + poem.id);
-                let authordes = $("<li/>").html(poem.authordes)/*.css("display", "none")*/.attr("id", "authordes" + poem.id);
+                let authordes = $("<li/>").html(poem.authordes).css("display", "none").attr("id", "authordes" + poem.id);
                 //let imgpath = $("<img/>").attr("src", poem.imagePath).css("margin-top", "15px");
                 ul.append(name).append(author).append(content).append(authordes);
                 div.append(ul);

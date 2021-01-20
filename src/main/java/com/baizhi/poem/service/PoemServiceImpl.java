@@ -62,13 +62,13 @@ public class PoemServiceImpl implements PoemService {
 
             //指定过滤条件
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-            if (!StringUtils.isEmpty(author)) {
+            if (!StringUtils.isEmpty(author)&&!author.equals( "所有" )) {
                boolQueryBuilder.filter(QueryBuilders.termQuery("author",author));
             }
-            if (!StringUtils.isEmpty(type)) {
+            if (!StringUtils.isEmpty(type)&&!type.equals( "所有" )) {
                 boolQueryBuilder.filter(QueryBuilders.termQuery("type",type));
             }
-            if(!StringUtils.isEmpty( subType )){
+            if(!StringUtils.isEmpty( subType )&&!subType.equals( "所有" )){
                 boolQueryBuilder.filter( QueryBuilders.nestedQuery( "category",QueryBuilders.termQuery( "category.name",subType ), ScoreMode.None));
             }
             if (StringUtils.isEmpty(content)) {
@@ -77,11 +77,18 @@ public class PoemServiceImpl implements PoemService {
                 sourceBuilder.query(QueryBuilders.matchAllQuery());*/
             } else {
                 //设置为多字段检索
-                String[] fields = {"name", "content", "author", "authordes"};
+                String[] fields = {"name", "content", "author"};
                 BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
                 for (String field : fields) {
-                    boolQuery.should( QueryBuilders.matchQuery( field,content ) );
-
+                    MatchQueryBuilder queryBuilder = QueryBuilders.matchQuery( field, content );
+                    queryBuilder.analyzer( "ik_smart" );
+                    if (field.equals( "content" )) {
+                        queryBuilder.boost(2f);
+                    }
+                    if (field.equals( "name" )||field.equals( "author" )) {
+                        queryBuilder.boost( 1.5f );
+                    }
+                    boolQuery.should( queryBuilder );
                 }
                 DisMaxQueryBuilder disMaxQueryBuilder = QueryBuilders.disMaxQuery();
                 disMaxQueryBuilder.add( boolQuery );
@@ -94,7 +101,8 @@ public class PoemServiceImpl implements PoemService {
             //sourceBuilder.postFilter(boolQueryBuilder);
             sourceBuilder.query( boolQueryBuilder );
             //指定高亮
-            sourceBuilder.highlighter(new HighlightBuilder().field("*").requireFieldMatch(false).preTags("<span style='color:red;'>").postTags("</span>"));
+            sourceBuilder.highlighter(new HighlightBuilder().
+                    field("name").field( "author" ).field( "content" ).requireFieldMatch(false).preTags("<span style='color:red;'>").postTags("</span>"));
             //指定显示记录
             sourceBuilder.size(20);
 
